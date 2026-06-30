@@ -1,0 +1,52 @@
+:root {
+  /* Paleta cálida de pizzería: terracota, tomate, queso, masa horneada */
+  --terracota: #7a2e1d;
+  --terracota-oscuro: #4a1a10;
+  --tomate: #c1432a;
+  --tomate-claro: #e8704f;
+  --queso: #e8a93b;
+  --masa: #f4e9d8;
+  --masa-oscura: #e8d9bf;
+  --carbon: #2b211c;
+  --texto-secundario: #7a6f63;
+  --borde: #e3d6c2;
+  --exito: #3f7d4f;
+  --exito-bg: #e8f3e9;
+  --error: #a3322f;
+  --error-bg: #fbeaea;
+
+  --fuente-display: "Fraunces", Georgia, serif;
+  --fuente-cuerpo: "Inter", system-ui, sans-serif;
+  --fuente-mono: "JetBrains Mono", "Courier New", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fuente-cuerpo);
+  background: var(--masa);
+  color: var(--carbon);
+}
+
+button {
+  font-family: var(--fuente-cuerpo);
+}
+
+input,
+select {
+  font-family: var(--fuente-cuerpo);
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--tomate) !important;
+  box-shadow: 0 0 0 3px rgba(193, 67, 42, 0.15);
+}
+
+::selection {
+  background: var(--queso);
+}
