@@ -1,12 +1,11 @@
 :root {
-  /* Paleta cálida de pizzería: terracota, tomate, queso, masa horneada */
   --terracota: #7a2e1d;
   --terracota-oscuro: #4a1a10;
   --tomate: #c1432a;
   --tomate-claro: #e8704f;
   --queso: #e8a93b;
   --masa: #f4e9d8;
-  --masa-oscura: #e8d9bf;
+  --masa-oscura: #e0ceb4;
   --carbon: #2b211c;
   --texto-secundario: #7a6f63;
   --borde: #e3d6c2;
@@ -27,8 +26,15 @@
 body {
   margin: 0;
   font-family: var(--fuente-cuerpo);
-  background: var(--masa);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(232, 168, 59, 0.08) 0%, transparent 60%),
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.015) 2px, rgba(0, 0, 0, 0.015) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 0, 0, 0.015) 2px, rgba(0, 0, 0, 0.015) 4px),
+    url("./assets/textura-papel.png"),
+    var(--masa);
   color: var(--carbon);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button {
@@ -43,10 +49,44 @@ select {
 input:focus,
 select:focus {
   outline: none;
-  border-color: var(--tomate) !important;
+  border-color: var(--tomate) ;
   box-shadow: 0 0 0 3px rgba(193, 67, 42, 0.15);
 }
 
 ::selection {
   background: var(--queso);
+}
+
+@media (hover: hover) {
+  button:hover {
+    filter: brightness(1.08);
+  }
+
+  [data-tarjeta="true"]:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-2px);
+  }
+}
+
+.preview-col {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .wizard-layout {
+    flex-direction: row !important;
+    align-items: flex-start;
+    gap: 40px !important;
+  }
+
+  .wizard-layout > div:first-child {
+    flex: 1;
+  }
+
+  .preview-col {
+    display: flex;
+    flex-shrink: 0;
+    position: sticky;
+    top: 90px;
+  }
 }
