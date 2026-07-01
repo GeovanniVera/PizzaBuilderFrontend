@@ -1,22 +1,40 @@
 :root {
-  --terracota: #7a2e1d;
-  --terracota-oscuro: #4a1a10;
-  --tomate: #c1432a;
-  --tomate-claro: #e8704f;
-  --queso: #e8a93b;
-  --masa: #f4e9d8;
-  --masa-oscura: #e0ceb4;
-  --carbon: #2b211c;
-  --texto-secundario: #7a6f63;
-  --borde: #e3d6c2;
+  /* === Color palette (ui-ux-pro-max) === */
+  --color-primary: #DC2626;
+  --color-on-primary: #FFFFFF;
+  --color-secondary: #F87171;
+  --color-accent: #A16207;
+  --color-background: #FEF2F2;
+  --color-foreground: #450A0A;
+  --color-muted: #F0EDF1;
+  --color-border: #FECACA;
+  --color-destructive: #DC2626;
+  --color-ring: #DC2626;
+
+  /* === Legacy aliases (keep for backward compat) === */
+  --terracota: var(--color-primary);
+  --terracota-oscuro: #991b1b;
+  --tomate: var(--color-primary);
+  --tomate-claro: var(--color-secondary);
+  --queso: var(--color-accent);
+  --masa: #faf0e6;
+  --masa-oscura: #f0e0cc;
+  --carbon: var(--color-foreground);
+  --texto-secundario: #734a4a;
+  --borde: var(--color-border);
   --exito: #3f7d4f;
   --exito-bg: #e8f3e9;
-  --error: #a3322f;
+  --error: var(--color-destructive);
   --error-bg: #fbeaea;
 
-  --fuente-display: "Fraunces", Georgia, serif;
-  --fuente-cuerpo: "Inter", system-ui, sans-serif;
+  /* === Typography (ui-ux-pro-max) === */
+  --fuente-display: "Playfair Display SC", Georgia, serif;
+  --fuente-cuerpo: "Karla", system-ui, sans-serif;
   --fuente-mono: "JetBrains Mono", "Courier New", monospace;
+
+  /* === Transitions === */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
 }
 
 * {
@@ -27,38 +45,61 @@ body {
   margin: 0;
   font-family: var(--fuente-cuerpo);
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(232, 168, 59, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 0%, rgba(220, 38, 38, 0.04) 0%, transparent 60%),
     repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.015) 2px, rgba(0, 0, 0, 0.015) 4px),
     repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 0, 0, 0.015) 2px, rgba(0, 0, 0, 0.015) 4px),
     url("./assets/textura-papel.png"),
-    var(--masa);
+    var(--color-background);
   color: var(--carbon);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+  overscroll-behavior: none;
 }
 
 button {
   font-family: var(--fuente-cuerpo);
+  cursor: pointer;
 }
 
 input,
-select {
+select,
+textarea {
   font-family: var(--fuente-cuerpo);
 }
 
-input:focus,
-select:focus {
-  outline: none;
-  border-color: var(--tomate) ;
-  box-shadow: 0 0 0 3px rgba(193, 67, 42, 0.15);
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+  border-color: var(--color-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ring) 20%, transparent);
 }
 
 ::selection {
   background: var(--queso);
+  color: var(--color-foreground);
+}
+
+/* === Interactive elements === */
+
+button,
+[role="button"],
+[data-clickable="true"] {
+  cursor: pointer;
+  transition:
+    filter var(--transition-fast),
+    box-shadow var(--transition-base),
+    transform var(--transition-base),
+    background-color var(--transition-base),
+    border-color var(--transition-base);
 }
 
 @media (hover: hover) {
-  button:hover {
+  button:not(:disabled):hover,
+  [role="button"]:not(:disabled):hover,
+  [data-clickable="true"]:hover {
     filter: brightness(1.08);
   }
 
@@ -68,6 +109,72 @@ select:focus {
   }
 }
 
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button:disabled,
+[role="button"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === Reduced motion === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* === Resumen layout === */
+.resumen-layout {
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.resumen-preview {
+  padding: 20px 20px 12px;
+  background: #ffffff;
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+}
+
+.resumen-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .resumen-layout {
+    flex-direction: row;
+    max-width: 720px;
+  }
+
+  .resumen-preview {
+    flex-shrink: 0;
+    width: 240px;
+    position: sticky;
+    top: 90px;
+    align-self: flex-start;
+    padding: 24px 16px;
+  }
+
+  .resumen-right {
+    flex: 1;
+    gap: 20px;
+  }
+}
+
+/* === Preview column (hidden on mobile) === */
 .preview-col {
   display: none;
 }

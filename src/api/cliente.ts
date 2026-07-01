@@ -24,3 +24,11 @@ export function get<T>(url: string): Promise<ApiRespuesta<T>> {
 export function post<T>(url: string, datos: unknown): Promise<ApiRespuesta<T>> {
   return peticion<T>(url, { method: "POST", body: JSON.stringify(datos) });
 }
+
+export function del<T = void>(url: string): Promise<ApiRespuesta<T>> {
+  return peticion<T>(url, { method: "DELETE" });
+}
+
+export function put<T>(url: string, datos: unknown): Promise<ApiRespuesta<T>> {
+  return peticion<T>(url, { method: "PUT", body: JSON.stringify(datos) });
+}

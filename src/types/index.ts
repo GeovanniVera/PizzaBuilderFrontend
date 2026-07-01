@@ -87,3 +87,20 @@ export interface Ticket {
   id: string;
   totalCobrado: number;
 }
+
+export interface ItemPedidoRespuesta {
+  precio: number;
+  tamano: string;
+  masa: string;
+  toppings: string[];
+  extraQueso: boolean;
+  nombreBebida: string | null;
+  nombrePostre: string | null;
+}
+
+export interface Pedido {
+  id: string;
+  fechaConfirmacion: string;
+  totalCobrado: number;
+  items: ItemPedidoRespuesta[];
+}

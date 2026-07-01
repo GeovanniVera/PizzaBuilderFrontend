@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { useCatalogo } from "../../contextos/CatalogoContext.tsx";
-import EncabezadoPaso from "../layout/EncabezadoPaso.tsx";
-import { desglosarPrecio } from "../../servicios/calcularPrecio.ts";
+import VistaPreviaPizza from "../layout/VistaPreviaPizza.tsx";
+import { desglosarPrecio, obtenerToppingsDeReceta } from "../../servicios/calcularPrecio.ts";
 import { formatearNombre, formatoMoneda } from "../../utils/formatear.ts";
 import { TIPO } from "../../utils/constantes.ts";
 import type { Construccion } from "../../types/index.ts";
@@ -13,64 +14,98 @@ interface Props {
 
 export default function PasoResumenItem({ construccion, confirmarItem, reiniciar }: Props) {
   const catalogo = useCatalogo();
+
+  const toppingsReceta = useMemo(
+    () => obtenerToppingsDeReceta(construccion.nombreReceta ?? "", catalogo.recetas),
+    [construccion.nombreReceta, catalogo.recetas],
+  );
+
   const {
     precioBasePizza, cargoTamano, cargoExtraQueso,
     precioToppings, precioBebida, precioPostre,
     total, nombresToppingsPizza,
   } = desglosarPrecio(construccion, catalogo);
 
+  const esCombo = construccion.tipo === TIPO.COMBO;
+  const gustoProps = construccion.tipo === TIPO.GUSTO;
+  const toppingsList = gustoProps
+    ? construccion.toppings
+    : nombresToppingsPizza;
+
   return (
-    <div>
-      <EncabezadoPaso titulo="Resumen" subtitulo="Revisa antes de agregar al pedido" />
-
-      <div style={estilos.tarjeta}>
-        <Linea etiqueta="Tipo" valor={formatearTipo(construccion.tipo ?? "")} />
-        {construccion.nombreReceta && <Linea etiqueta="Receta" valor={formatearNombre(construccion.nombreReceta)} />}
-        <Linea etiqueta="Tamaño" valor={formatearNombre(construccion.tamano ?? "")} />
-        <Linea etiqueta="Masa" valor={formatearNombre(construccion.masa ?? "")} />
-        {construccion.tipo === TIPO.GUSTO && (
-          <Linea
-            etiqueta="Toppings"
-            valor={construccion.toppings.length > 0 ? construccion.toppings.join(", ") : "Sin toppings"}
+    <div className="resumen-layout">
+      <div className="resumen-preview">
+        <div style={estilos.previewCard}>
+          <VistaPreviaPizza
+            construccion={construccion}
+            toppingsReceta={construccion.tipo !== TIPO.GUSTO ? toppingsReceta : undefined}
           />
-        )}
-        {construccion.tipo !== TIPO.GUSTO && nombresToppingsPizza.length > 0 && (
-          <Linea etiqueta="Lleva" valor={nombresToppingsPizza.join(", ")} />
-        )}
-        <Linea etiqueta="Extra queso" valor={construccion.extraQueso ? "Sí" : "No"} />
-        {construccion.tipo === TIPO.COMBO && (
-          <>
-            <Linea etiqueta="Bebida" valor={construccion.nombreBebida ?? ""} />
-            <Linea etiqueta="Postre" valor={construccion.nombrePostre ?? ""} />
-          </>
-        )}
-
-        <div style={estilos.separador} />
-
-        <LineaPrecio etiqueta="Precio base" valor={precioBasePizza} />
-        <LineaPrecio etiqueta="Cargo por tamaño" valor={cargoTamano} />
-        {nombresToppingsPizza.length > 0 && <LineaPrecio etiqueta="Toppings" valor={precioToppings} />}
-        {cargoExtraQueso > 0 && <LineaPrecio etiqueta="Extra queso" valor={cargoExtraQueso} />}
-        {construccion.tipo === TIPO.COMBO && (
-          <>
-            <LineaPrecio etiqueta="Bebida" valor={precioBebida} />
-            <LineaPrecio etiqueta="Postre" valor={precioPostre} />
-          </>
-        )}
-
-        <div style={estilos.totalRow}>
-          <span style={estilos.totalLabel}>Total estimado</span>
-          <span style={estilos.totalValor}>{formatoMoneda(total)}</span>
         </div>
+        <p style={estilos.tituloPizza}>
+          {construccion.nombreReceta
+            ? formatearNombre(construccion.nombreReceta)
+            : "Pizza personalizada"}
+        </p>
+        <p style={estilos.subtituloPizza}>
+          {formatearNombre(construccion.tamano ?? "")} · {formatearNombre(construccion.masa ?? "")}
+        </p>
       </div>
 
-      <div style={estilos.acciones}>
-        <button type="button" onClick={reiniciar} style={estilos.botonSecundario}>
-          Cancelar
-        </button>
-        <button type="button" onClick={() => confirmarItem(total)} style={estilos.botonPrimario}>
-          Agregar al pedido
-        </button>
+      <div className="resumen-right">
+        <div style={estilos.tarjeta}>
+          <div style={estilos.seccionTitulo}>
+            <span style={estilos.seccionLabel}>Detalle del pedido</span>
+          </div>
+
+          <Linea etiqueta="Tipo" valor={formatearTipo(construccion.tipo ?? "")} />
+
+          {construccion.nombreReceta && (
+            <Linea etiqueta="Receta" valor={formatearNombre(construccion.nombreReceta)} />
+          )}
+
+          <Linea etiqueta="Extra queso" valor={construccion.extraQueso ? "Sí" : "No"} />
+
+          {toppingsList.length > 0 && (
+            <Linea
+              etiqueta={gustoProps ? "Toppings" : "Lleva"}
+              valor={toppingsList.join(", ")}
+            />
+          )}
+
+          {esCombo && construccion.nombreBebida && (
+            <Linea etiqueta="Bebida" valor={formatearNombre(construccion.nombreBebida)} />
+          )}
+          {esCombo && construccion.nombrePostre && (
+            <Linea etiqueta="Postre" valor={formatearNombre(construccion.nombrePostre)} />
+          )}
+
+          <div style={estilos.separador} />
+
+          <LineaPrecio etiqueta="Pizza base" valor={precioBasePizza} />
+          <LineaPrecio etiqueta={`Tamaño ${formatearNombre(construccion.tamano ?? "")}`} valor={cargoTamano} />
+          {toppingsList.length > 0 && <LineaPrecio etiqueta="Toppings" valor={precioToppings} />}
+          {cargoExtraQueso > 0 && <LineaPrecio etiqueta="Extra queso" valor={cargoExtraQueso} />}
+          {esCombo && (
+            <>
+              <LineaPrecio etiqueta="Bebida" valor={precioBebida} />
+              <LineaPrecio etiqueta="Postre" valor={precioPostre} />
+            </>
+          )}
+
+          <div style={estilos.totalRow}>
+            <span style={estilos.totalLabel}>Total</span>
+            <span style={estilos.totalValor}>{formatoMoneda(total)}</span>
+          </div>
+        </div>
+
+        <div style={estilos.acciones}>
+          <button type="button" onClick={reiniciar} style={estilos.botonSecundario}>
+            Cancelar
+          </button>
+          <button type="button" onClick={() => confirmarItem(total)} style={estilos.botonPrimario}>
+            Agregar al pedido — {formatoMoneda(total)}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -86,6 +121,7 @@ function Linea({ etiqueta, valor }: { etiqueta: string; valor: string }) {
 }
 
 function LineaPrecio({ etiqueta, valor }: { etiqueta: string; valor: number }) {
+  if (valor <= 0) return null;
   return (
     <div style={estilos.linea}>
       <span style={estilos.etiquetaPrecio}>{etiqueta}</span>
@@ -101,33 +137,68 @@ function formatearTipo(tipo: string) {
 }
 
 const estilos = {
+  previewCard: {
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  tituloPizza: {
+    fontFamily: "var(--fuente-display)",
+    fontSize: 20,
+    fontWeight: 700,
+    color: "var(--terracota-oscuro)",
+    textAlign: "center" as const,
+    margin: "0 0 2px",
+  },
+  subtituloPizza: {
+    fontSize: 14,
+    color: "var(--texto-secundario)",
+    textAlign: "center" as const,
+    margin: "0 0 4px",
+  },
   tarjeta: {
-    maxWidth: 480,
     background: "#ffffff",
     border: "1px solid var(--borde)",
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
+    borderRadius: 14,
+    padding: "16px 20px",
+  },
+  seccionTitulo: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottom: "1px solid var(--borde)",
+  },
+  seccionLabel: {
+    fontFamily: "var(--fuente-display)",
+    fontSize: 14,
+    fontWeight: 700,
+    color: "var(--carbon)",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
   },
   linea: {
     display: "flex",
     justifyContent: "space-between",
-    padding: "6px 0",
-    fontSize: 14,
+    padding: "5px 0",
+    fontSize: 13.5,
+    gap: 16,
   },
   etiqueta: {
     color: "var(--texto-secundario)",
+    flexShrink: 0,
   },
   valor: {
     fontWeight: 600,
     color: "var(--carbon)",
     textAlign: "right" as const,
-    maxWidth: "60%",
+    flex: 1,
   },
   separador: {
     height: 1,
     background: "var(--borde)",
-    margin: "14px 0",
+    margin: "12px 0",
   },
   etiquetaPrecio: {
     color: "var(--texto-secundario)",
@@ -143,8 +214,8 @@ const estilos = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 14,
-    paddingTop: 14,
+    marginTop: 12,
+    paddingTop: 12,
     borderTop: "2px solid var(--tomate)",
   },
   totalLabel: {
@@ -161,26 +232,30 @@ const estilos = {
   },
   acciones: {
     display: "flex",
-    gap: 12,
+    flexDirection: "column" as const,
+    gap: 10,
+    marginTop: 20,
   },
   botonSecundario: {
-    padding: "12px 24px",
-    borderRadius: 10,
+    width: "100%",
+    padding: "14px 24px",
+    borderRadius: 12,
     border: "1px solid var(--borde)",
     background: "#ffffff",
-    color: "var(--carbon)",
+    color: "var(--texto-secundario)",
     fontWeight: 600,
     fontSize: 14,
     cursor: "pointer",
   },
   botonPrimario: {
-    padding: "12px 28px",
-    borderRadius: 10,
+    width: "100%",
+    padding: "16px 28px",
+    borderRadius: 12,
     border: "none",
     background: "var(--tomate)",
     color: "#ffffff",
     fontWeight: 700,
-    fontSize: 14,
+    fontSize: 16,
     cursor: "pointer",
   },
 };
